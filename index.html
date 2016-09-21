@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="utf-8">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.2.3/foundation.css" />
+      <style>
+        body { margin:0;position:fixed;top:0;right:0;bottom:0;left:0; }
+      </style>
+    </head>
+
+    <body>
+      <div class="row">
+          <div class="small-12 column">
+              <div id="plot"></div>
+          </div>
+      </div>
+      <script src="https://d3js.org/d3.v3.min.js"></script>
+      <script>
+        var stateGrid = {
+            "ME" : { "state": "ME", "row": 0, "col": 11 },
+            "WI" : { "state": "WI", "row": 1, "col": 6 },
+            "VT" : { "state": "VT", "row": 1, "col": 10 },
+            "NH" : { "state": "NH", "row": 1, "col": 11 },
+            "WA" : { "state": "WA", "row": 2, "col": 1 },
+            "ID" : { "state": "ID", "row": 2, "col": 2 },
+            "MT" : { "state": "MT", "row": 2, "col": 3 },
+            "ND" : { "state": "ND", "row": 2, "col": 4 },
+            "MN" : { "state": "MN", "row": 2, "col": 5 },
+            "IL" : { "state": "IL", "row": 2, "col": 6 },
+            "MI" : { "state": "MI", "row": 2, "col": 7 },
+            "NY" : { "state": "NY", "row": 2, "col": 9 },
+            "MA" : { "state": "MA", "row": 2, "col": 10 },
+            "OR" : { "state": "OR", "row": 3, "col": 1 },
+            "NV" : { "state": "NV", "row": 3, "col": 2 },
+            "WY" : { "state": "WY", "row": 3, "col": 3 },
+            "SD" : { "state": "SD", "row": 3, "col": 4 },
+            "IA" : { "state": "IA", "row": 3, "col": 5 },
+            "IN" : { "state": "IN", "row": 3, "col": 6 },
+            "OH" : { "state": "OH", "row": 3, "col": 7 },
+            "PA" : { "state": "PA", "row": 3, "col": 8 },
+            "NJ" : { "state": "NJ", "row": 3, "col": 9 },
+            "CT" : { "state": "CT", "row": 3, "col": 10 },
+            "RI" : { "state": "RI", "row": 3, "col": 11 },
+            "CA" : { "state": "CA", "row": 4, "col": 1 },
+            "UT" : { "state": "UT", "row": 4, "col": 2 },
+            "CO" : { "state": "CO", "row": 4, "col": 3 },
+            "NE" : { "state": "NE", "row": 4, "col": 4 },
+            "MO" : { "state": "MO", "row": 4, "col": 5 },
+            "KY" : { "state": "KY", "row": 4, "col": 6 },
+            "WV" : { "state": "WV", "row": 4, "col": 7 },
+            "VA" : { "state": "VA", "row": 4, "col": 8 },
+            "MD" : { "state": "MD", "row": 4, "col": 9 },
+            "DE" : { "state": "DE", "row": 4, "col": 10 },
+            "AZ" : { "state": "AZ", "row": 5, "col": 2 },
+            "NM" : { "state": "NM", "row": 5, "col": 3 },
+            "KS" : { "state": "KS", "row": 5, "col": 4 },
+            "AR" : { "state": "AR", "row": 5, "col": 5 },
+            "TN" : { "state": "TN", "row": 5, "col": 6 },
+            "NC" : { "state": "NC", "row": 5, "col": 7 },
+            "SC" : { "state": "SC", "row": 5, "col": 8 },
+            "OK" : { "state": "OK", "row": 6, "col": 4 },
+            "LA" : { "state": "LA", "row": 6, "col": 5 },
+            "MS" : { "state": "MS", "row": 6, "col": 6 },
+            "AL" : { "state": "AL", "row": 6, "col": 7 },
+            "GA" : { "state": "GA", "row": 6, "col": 8 },
+            "HI" : { "state": "HI", "row": 7, "col": 0 },
+            "AK" : { "state": "AK", "row": 0, "col": 0 },
+            "TX" : { "state": "TX", "row": 7, "col": 4 },
+            "FL" : { "state": "FL", "row": 7, "col": 9 }
+        };
+        
+        var selectedStates = {};
+        var stateIDs = Object.getOwnPropertyNames(stateGrid);
+        
+        stateIDs.forEach(function(stateID) {
+          selectedStates[stateID] = stateID.startsWith("M");
+        });
+
+        var xScale, yScale, xDomain, yDomain;
+
+        var margin = {top: 10, right: 100, bottom: 10, left: 40};
+        var div = d3.select('#plot').node().getBoundingClientRect();
+
+        var width = div.width - margin.left - margin.right,
+            height = 700;
+
+        console.log(width);
+
+        var svg = d3.select("#plot").append("svg")
+        .attr("height", "100%")
+        .attr("width", "100%")
+        .attr("viewBox", "0 0 " + width + " " + height)
+        .attr("preserveAspectRatio", "xMinYMin");
+
+        var stateWidth;
+        var gap = 2;
+
+        if (window.innerWidth < 768) {
+            stateWidth = 30;
+        } else {
+            stateWidth = 47;
+        }
+
+        // console.log(stateWidth);
+
+        var stateGroup = svg.append("g")
+        .attr("transform", "translate(50, 50)");
+        
+        var stateXScale =  d3.scale.linear()
+        .domain([0,11])
+        .range([0, 11 * (stateWidth + gap)]);
+        
+        var stateYScale = d3.scale.linear()
+        .domain([0,7])
+        .range([0, 7 * (stateWidth + gap)]);
+
+        var stateGroups = stateGroup.selectAll("g")
+        .data(stateIDs).enter()
+        .append("g")
+        .attr("transform", function (stateID) { 
+          return "translate(" + stateXScale(stateGrid[stateID].col) + "," + stateYScale(stateGrid[stateID].row) + ")"; });
+
+        var stateRects = stateGroups.append("rect")
+        .attr("width", stateWidth).attr("height", stateWidth)
+        .style("fill", "#ccc");
+
+      </script>
+    </body>
+</html>
