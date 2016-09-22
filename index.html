@@ -70,7 +70,7 @@
         };
         
         var selectedStates = {};
-        var stateIDs = Object.getOwnPropertyNames(stateGrid);
+        var stateIDs = d3.keys(stateGrid);
         
         stateIDs.forEach(function(stateID) {
           selectedStates[stateID] = stateID.startsWith("M");
@@ -103,7 +103,7 @@
 
         // console.log(stateWidth);
 
-        var stateGroup = svg.append("g")
+        var mapGroup = svg.append("g")
         .attr("transform", "translate(50, 50)");
         
         var stateXScale =  d3.scale.linear()
@@ -114,7 +114,7 @@
         .domain([0,7])
         .range([0, 7 * (stateWidth + gap)]);
 
-        var stateGroups = stateGroup.selectAll("g")
+        var stateGroups = mapGroup.selectAll("g")
         .data(stateIDs).enter()
         .append("g")
         .attr("transform", function (stateID) { 
@@ -122,7 +122,10 @@
 
         var stateRects = stateGroups.append("rect")
         .attr("width", stateWidth).attr("height", stateWidth)
-        .style("fill", "#ccc");
+        .style("fill", "#ccc")
+        .on('click', function(d) {
+            alert('You clicked on ' + d);
+        });
 
       </script>
     </body>
